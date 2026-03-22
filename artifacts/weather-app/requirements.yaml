@@ -1,0 +1,14 @@
+packages:
+  "framer-motion": "Smooth animations for ticker tape alerts and complex transitions"
+  "date-fns": "Formatting dates and times beautifully"
+  "clsx": "Conditional class merging"
+  "tailwind-merge": "Tailwind utility class conflict resolution"
+
+images:
+  - path: "artifacts/weather-app/public/images/weather-bg.png"
+    description: "Dark, atmospheric abstract meteorological background, deep slate and midnight blue gradient with subtle sweeping isobars and volumetric lighting, giving a premium broadcast studio feel"
+    aspect_ratio: "16:9"
+
+notes:
+  - "Import React Query hooks from @workspace/api-client-react as requested"
+  - "Using Framer Motion for the infinite scrolling ticker tape on warnings"
