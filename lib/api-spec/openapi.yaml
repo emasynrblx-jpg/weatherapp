@@ -1,0 +1,359 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Weather App API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: weather
+    description: Weather operations
+  - name: warnings
+    description: Warning operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /weather:
+    get:
+      operationId: getWeather
+      tags: [weather]
+      summary: Get weather for a location
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: lon
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Weather data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeatherData"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /geocode:
+    get:
+      operationId: geocodeCity
+      tags: [weather]
+      summary: Geocode a city name to lat/lon
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Geocode results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeocodeResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /warnings:
+    get:
+      operationId: getWarnings
+      tags: [warnings]
+      summary: Get active weather warnings for a location
+      parameters:
+        - name: lat
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: lon
+          in: query
+          required: false
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Active warnings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WeatherWarning"
+    post:
+      operationId: createWarning
+      tags: [warnings]
+      summary: Create a weather warning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWarningRequest"
+      responses:
+        "201":
+          description: Warning created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeatherWarning"
+  /warnings/{id}:
+    delete:
+      operationId: deleteWarning
+      tags: [warnings]
+      summary: Delete a weather warning
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Warning deleted
+        "404":
+          description: Warning not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    WeatherData:
+      type: object
+      properties:
+        city:
+          type: string
+        country:
+          type: string
+        lat:
+          type: number
+        lon:
+          type: number
+        temperature:
+          type: number
+        feelsLike:
+          type: number
+        humidity:
+          type: number
+        windSpeed:
+          type: number
+        windDirection:
+          type: number
+        weatherCode:
+          type: number
+        weatherDescription:
+          type: string
+        isDay:
+          type: boolean
+        precipitationProbability:
+          type: number
+        visibility:
+          type: number
+        uvIndex:
+          type: number
+        pressure:
+          type: number
+        hourlyForecast:
+          type: array
+          items:
+            $ref: "#/components/schemas/HourlyForecast"
+        dailyForecast:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailyForecast"
+      required:
+        - city
+        - country
+        - lat
+        - lon
+        - temperature
+        - feelsLike
+        - humidity
+        - windSpeed
+        - windDirection
+        - weatherCode
+        - weatherDescription
+        - isDay
+        - precipitationProbability
+        - visibility
+        - uvIndex
+        - pressure
+        - hourlyForecast
+        - dailyForecast
+    HourlyForecast:
+      type: object
+      properties:
+        time:
+          type: string
+        temperature:
+          type: number
+        weatherCode:
+          type: number
+        precipitationProbability:
+          type: number
+      required:
+        - time
+        - temperature
+        - weatherCode
+        - precipitationProbability
+    DailyForecast:
+      type: object
+      properties:
+        date:
+          type: string
+        maxTemp:
+          type: number
+        minTemp:
+          type: number
+        weatherCode:
+          type: number
+        precipitationSum:
+          type: number
+        windSpeedMax:
+          type: number
+      required:
+        - date
+        - maxTemp
+        - minTemp
+        - weatherCode
+        - precipitationSum
+        - windSpeedMax
+    GeocodeResult:
+      type: object
+      properties:
+        name:
+          type: string
+        country:
+          type: string
+        admin1:
+          type: string
+        lat:
+          type: number
+        lon:
+          type: number
+      required:
+        - name
+        - country
+        - lat
+        - lon
+    GeocodeResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeocodeResult"
+      required:
+        - results
+    WeatherWarning:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - tornado_warning
+            - severe_thunderstorm_warning
+            - tornado_watch
+            - severe_thunderstorm_watch
+            - forecast_statement
+            - warning_update
+        title:
+          type: string
+        message:
+          type: string
+        issuedAt:
+          type: string
+        expiresAt:
+          type: string
+        lat:
+          type: number
+        lon:
+          type: number
+        city:
+          type: string
+      required:
+        - id
+        - type
+        - title
+        - message
+        - issuedAt
+        - expiresAt
+        - lat
+        - lon
+        - city
+    CreateWarningRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - tornado_warning
+            - severe_thunderstorm_warning
+            - tornado_watch
+            - severe_thunderstorm_watch
+            - forecast_statement
+            - warning_update
+        message:
+          type: string
+        expiresInMinutes:
+          type: number
+        lat:
+          type: number
+        lon:
+          type: number
+        city:
+          type: string
+      required:
+        - type
+        - message
+        - expiresInMinutes
+        - lat
+        - lon
+        - city
